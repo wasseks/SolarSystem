@@ -28,7 +28,7 @@ void main() {
     PlanetData p = planets[idx];
     vec3 acceleration = vec3(0.0);
 
-    // Вычисляем гравитацию от других планет
+    // Г‚Г»Г·ГЁГ±Г«ГїГҐГ¬ ГЈГ°Г ГўГЁГІГ Г¶ГЁГѕ Г®ГІ Г¤Г°ГіГЈГЁГµ ГЇГ«Г Г­ГҐГІ
     for (uint i = 0; i < planets.length(); i++) {
         if (i == idx) continue;
         vec3 dir = planets[i].position - p.position;
@@ -37,7 +37,7 @@ void main() {
         acceleration += normalize(dir) * G * planets[i].mass / (dist * dist);
     }
 
-    // Обновляем скорость и позицию
+    // ГЋГЎГ­Г®ГўГ«ГїГҐГ¬ Г±ГЄГ®Г°Г®Г±ГІГј ГЁ ГЇГ®Г§ГЁГ¶ГЁГѕ
     p.velocity += acceleration * ubo.deltaTime;
     p.position += p.velocity * ubo.deltaTime;
 
