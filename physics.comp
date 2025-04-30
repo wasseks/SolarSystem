@@ -1,0 +1,45 @@
+#version 450
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+struct PlanetData {
+    vec3 position;
+    vec3 velocity;
+    vec3 color;
+    float diameter;
+    float mass;
+};
+
+layout(binding = 0) buffer PlanetBuffer {
+    PlanetData planets[];
+};
+
+layout(binding = 1) uniform UniformBufferObject {
+    mat4 view;
+    mat4 proj;
+    float deltaTime;
+} ubo;
+
+const float G = 0.001; 
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= planets.length()) return;
+
+    PlanetData p = planets[idx];
+    vec3 acceleration = vec3(0.0);
+
+    // Вычисляем гравитацию от других планет
+    for (uint i = 0; i < planets.length(); i++) {
+        if (i == idx) continue;
+        vec3 dir = planets[i].position - p.position;
+        float dist = length(dir);
+        if (dist < 0.01) dist = 0.01; 
+        acceleration += normalize(dir) * G * planets[i].mass / (dist * dist);
+    }
+
+    // Обновляем скорость и позицию
+    p.velocity += acceleration * ubo.deltaTime;
+    p.position += p.velocity * ubo.deltaTime;
+
+    planets[idx] = p;
+}
