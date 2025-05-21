@@ -28,7 +28,6 @@ void main() {
     PlanetData p = planets[idx];
     vec3 acceleration = vec3(0.0);
 
-    // Âû÷èñëÿåì ãðàâèòàöèþ îò äðóãèõ ïëàíåò
     for (uint i = 0; i < planets.length(); i++) {
         if (i == idx) continue;
         vec3 dir = planets[i].position - p.position;
@@ -37,7 +36,6 @@ void main() {
         acceleration += normalize(dir) * G * planets[i].mass / (dist * dist);
     }
 
-    // Îáíîâëÿåì ñêîðîñòü è ïîçèöèþ
     p.velocity += acceleration * ubo.deltaTime;
     p.position += p.velocity * ubo.deltaTime;
 
