@@ -363,7 +363,6 @@ private:
     bool framebufferResized = false;
 
     void handleInput() {
-        float speed = cameraSpeed * deltaTime;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             camera.distance -= cameraSpeed;
             if (camera.distance < 0.5f) camera.distance = 0.5f;
