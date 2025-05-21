@@ -1630,7 +1630,6 @@ private:
         UniformBufferObject ubo{};
         ubo.view = camera.getViewMatrix();
         ubo.proj = camera.getProjectionMatrix(swapChainExtent.width / (float)swapChainExtent.height);
-        //std::cout << deltaTime << "\n";
         ubo.deltaTime = deltaTime;
         memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
