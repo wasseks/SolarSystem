@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <sstream>
 #include <stdexcept>
 #include <algorithm>
 #include <chrono>
@@ -141,18 +143,63 @@ struct Camera {
     }
 };
 
-class Object {
-public:
-    Object(glm::vec3 pos, glm::vec3 vel, float m, float diam, glm::vec3 col = { 1.0f, 1.0f, 1.0f })
-        : position(pos), velocity(vel), mass(m), diameter(diam), color(col) {
-    }
-
+struct Object {
     glm::vec3 position;
     glm::vec3 velocity;
     glm::vec3 color;
     float diameter;
     float mass;
+
+    Object(glm::vec3 pos = { 0.0f, 0.0f, 0.0f }, glm::vec3 vel = { 0.0f, 0.0f, 0.0f }, 
+        float m = 1.0f, float diam = 1.0f, glm::vec3 col = { 1.0f, 1.0f, 1.0f })
+        : position(pos), velocity(vel), mass(m), diameter(diam), color(col) { }
 };
+
+void parseInput(std::vector<Object> &planets) {
+    std::ifstream file("input.txt");
+    if (!file.is_open()) {
+        throw std::runtime_error("failed to open input file: input.txt");
+    } 
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line.find("//") == 0) {
+            continue;
+        }
+        if (line.front() != '{' || line.back() != '}') {
+            continue;
+        }
+
+        try {
+            Object obj;
+            std::stringstream ss(line);
+            char c;
+
+            // {x,y,z},
+            ss >> c;
+            ss >> obj.position.x >> c >> obj.position.y >> c >> obj.position.z >> c;
+            ss >> c;
+
+            // {x,y,z},
+            ss >> c;
+            ss >> obj.velocity.x >> c >> obj.velocity.y >> c >> obj.velocity.z >> c;
+            ss >> c; 
+
+            ss >> obj.mass >> c; // mass
+
+            ss >> obj.diameter >> c; // diameter
+
+            ss >> c;
+            ss >> obj.color.r >> c >> obj.color.g >> c >> obj.color.b; // r,g,b
+            planets.push_back(obj);
+        }
+        catch (...) {
+            std::cerr << "Parsing error: " << line << '\n';
+            continue;
+        }
+    }
+    file.close();
+}
 
 void generateGrid(float gridSize, int gridDivisions, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
     float step = gridSize / gridDivisions;
@@ -424,26 +471,7 @@ private:
         createComputePipeline();
         createFramebuffers();
 
-        planets = {
-            // The Sun
-            Object({0.0f, 0.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, 1000000.0f, 2.5f, {1.000f,0.937f,0.000f}),
-            // The Mercury
-            Object({11.61f, 0.0f, 10.0f}, {0.0f, 9.28f, 0.0f}, 0.17f, 0.3f, {0.8f,0.8f,0.0f}),
-            // The Venus
-            Object({21.69f, 0.0f, 10.0f}, {0.0f, 6.79f, 0.0f}, 2.45f, 0.5f, {0.776f,0.027f,0.000f}),
-            // The Earth
-            Object({30.00f, 0.0f, 10.0f}, {0.0f, 5.77f, 0.0f}, 3.00f, 1.0f, {0.031f, 0.478f, 0.049f}),
-            // The Mars
-            Object({45.72f, 0.0f, 10.0f}, {0.0f, 4.68f, 0.0f}, 0.32f, 0.7f, {0.780f,0.416f,0.000f}),
-            // The Jupiter
-            Object({156.09f, 0.0f, 10.0f}, {0.0f, 2.53f, 0.0f}, 954.0f, 2.3f, {1.000f,0.941f,0.380f}),
-            // The Saturn
-            Object({286.65f, 0.0f, 10.0f}, {0.0f, 1.87f, 0.0f}, 286.0f, 1.8f, {1.000f,1.000f,0.600f}),
-            // The Uranium
-            //Object({575.73f, 0.0f, 10.0f}, {0.0f, 1.32f, 0.0f}, 43.6f, 1.0f, {0.4f,0.7f,0.7f}),
-            // The Neptune
-            //Object({902.07f, 0.0f, 10.0f}, {0.0f, 1.05f, 0.0f}, 51.5f, 1.0f, {0.2f,0.4f,0.8f})
-        };
+        parseInput(planets);
 
         generateSphere(1.0f, 50, 50, planetVertices, planetIndices, { 1.0f, 1.0f, 1.0f });
         createVertexBuffer(planetVertices, planetVertexBuffer, planetVertexBufferMemory);
@@ -569,7 +597,7 @@ private:
 
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "Hello Triangle";
+        appInfo.pApplicationName = "Solar System";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "No Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
